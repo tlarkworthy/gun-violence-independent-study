@@ -4,6 +4,14 @@ import random
 import spacy
 import sys
 
+from datePatterns import find_date, match_date
+from addressModel2 import AddressModel2
+from killedModel import KilledModel
+
+am = AddressModel2()
+km = KilledModel(killed=True)
+im = KilledModel(killed=False)
+
 def load(file):
     with open(file) as json_file:
         data = json.load(json_file)
@@ -14,40 +22,36 @@ def pick_first_num_from_text(text):
     nums = [int(s) for s in text.split() if s.isdigit()]
     return nums[0] if len(nums) > 0 else 0
 
-# Returns first num from text or 0 if no nums
+# Returns random num from text or 0 if no nums
 def pred_n_killed(event):
-    text = event["text"]
-    return 0#pick_first_num_from_text(text)
+    return km.predict_event(event)#0#pick_first_num_from_text(text)
 
-# Returns first num from text or 0 if no nums
+# Returns random num from text or 0 if no nums
 def pred_n_injured(event):
-    text = event["text"]
-    return 0#pick_first_num_from_text(text)
+    return im.predict_event(event)
 
 # Returns day before publish date
 # or yesterday if no publish date
 def pred_shooting_date(event):
     if event['publish_date'] == "":
-        publish_date = date.today()
+        pred_event_date = match_date(event['text'])
     else:
-        publish_date = datetime.strptime(event['publish_date'], "%Y-%m-%d")
+        pred_event_date = find_date(event['text'], event['publish_date'])
 
-    pred_event_date = publish_date - timedelta(days=1)
+    if pred_event_date is None:
+        pred_event_date = datetime.strptime(event['publish_date'], "%Y-%m-%d")
+
     return pred_event_date.strftime("%Y-%m-%d")
 
-# Returns the first location
+# Returns a random location
 def pred_address(event, nlp):
-    doc = nlp(event["text"])
-
-    desired_ents = ["FAC", "LOC"]
-
-    # Get words that are of the desired entities
-    candidates = list(filter(lambda x: x.label_ in desired_ents, doc.ents))
-
-    # Pick the first one
-    pred = candidates[0].text if len(candidates) > 0 else ""
     
-    return pred
+    return am.predict_event(event)
+
+def train(X_train, y_train):
+    am.fit(X_train, y_train)
+    km.fit(X_train, y_train)
+    im.fit(X_train, y_train)
 
 
 def predict(data):
@@ -65,6 +69,7 @@ def predict(data):
         event_pred["address"] = pred_address(event, nlp)
 
         predictions.append(event_pred)
+
         iters += 1
 
         if iters % 100 == 0:
@@ -74,6 +79,10 @@ def predict(data):
 
 def run():
     X_test = load('../data/X_test.json')
+    X_train = load('../data/X_val.json')
+    y_train = load('../data/y_val.json')
+
+    train(X_train, y_train)
     pred = predict(X_test)
     #with open('out.json', 'w') as f:
     #    f.write(json.dumps(pred))

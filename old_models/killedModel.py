@@ -80,7 +80,10 @@ class KilledModel(object):
 
         y_pred = self.crf.predict(X_test)
         n_killed = [self.arr_labels.index(label) for label in y_pred[0]]
-        return max(n_killed)
+        if len(n_killed) > 0:
+            return max(n_killed)
+        else:
+            return 0
 
     # def predict(self, X_events):
     #     return [self.__predict_event(event) for event in X_events]

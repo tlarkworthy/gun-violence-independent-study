@@ -47,12 +47,31 @@ def main(args):
         if iters % 100 == 0:
             print(iters)
 
+    def parse_other(x):
+        article_dict = {}
+        nonlocal iters
+
+        article_dict['incident_id'] = x['incident_id']
+        article_dict['state'] = x['state']
+        article_dict['city_or_county'] = x['city_or_county']
+        article_dict['congressional_district'] = x['congressional_district']
+        articles.append(article_dict)
+
+
+
+        iters += 1
+        if iters % 1000 == 0:
+            print(iters)
+
+
     df = pandas.read_csv('gun-violence-data_01-2013_03-2018.csv')
     df = df.replace(np.nan, '', regex=True)
 
-    df_slice = df[['incident_id', 'source_url', 'address', 'n_killed', 'n_injured', 'date']][args.start:args.end]
+    # df_slice = df[['incident_id', 'source_url', 'address', 'n_killed', 'n_injured', 'date']][args.start:args.end]
+    df_slice = df[['incident_id', 'state', 'city_or_county', 'congressional_district']][args.start:args.end]
 
-    df_slice.apply(parse_url, axis=1)   
+    # df_slice.apply(parse_url, axis=1)
+    df_slice.apply(parse_other, axis=1)   
 
     #title = 'gv_data_2000.json'
     with open(args.out, 'w') as outfile:

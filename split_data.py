@@ -29,7 +29,7 @@ def main():
     # read and load data
     data = []
 
-    with open('gun_data.json') as f:
+    with open('data/gun_data_new.json') as f:
         data = json.loads(f.read())
 
     # split data into X and y
@@ -56,7 +56,10 @@ def main():
             "n_killed": event["n_killed"],
             "n_injured": event["n_injured"],
             "shooting_date": event["shooting_date"],
-            "address": event["address"]
+            "address": event["address"],
+            "state": event["state"],
+            "city_or_county": event["city_or_county"],
+            "congressional_district": event["congressional_district"]
         }
 
         X.append(xdict)
@@ -72,12 +75,12 @@ def main():
     #print(len(X_test))
 
     # output split to json file
-    write_json_to_file('X_train.json', X_train)
-    write_json_to_file('X_val.json',   X_val)
-    write_json_to_file('X_test.json',  X_test)
-    write_json_to_file('y_train.json', y_train)
-    write_json_to_file('y_val.json',   y_val)
-    write_json_to_file('y_test.json',  y_test)
+    write_json_to_file('data/X_train.json', X_train)
+    write_json_to_file('data/X_val.json',   X_val)
+    write_json_to_file('data/X_test.json',  X_test)
+    write_json_to_file('data/y_train.json', y_train)
+    write_json_to_file('data/y_val.json',   y_val)
+    write_json_to_file('data/y_test.json',  y_test)
 
 if __name__ == '__main__':
     main()
